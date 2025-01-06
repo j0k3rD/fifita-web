@@ -33,17 +33,17 @@ export default function StartTournamentComponent({
   const [assignments, setAssignments] = useState<{ [key: string]: Assignment }>(
     {}
   );
-  const [participants, setParticipants] = useState<string[]>([]);
 
   useEffect(() => {
     const storedParticipants = localStorage.getItem("participants");
     const tournamentConfig = JSON.parse(
       localStorage.getItem("tournamentConfig") || "{}"
     );
+
     if (storedParticipants) {
-      setParticipants(JSON.parse(storedParticipants));
+      const parsedParticipants = JSON.parse(storedParticipants);
+      assignTeams(parsedParticipants, tournamentConfig);
     }
-    assignTeams(JSON.parse(storedParticipants || "[]"), tournamentConfig);
   }, []);
 
   const assignTeams = (participants: string[], config: any) => {
@@ -60,12 +60,17 @@ export default function StartTournamentComponent({
       });
     }
 
+    // Usar participants directamente del parámetro
     const shuffledTeams = [...allTeams].sort(() => Math.random() - 0.5);
     const newAssignments: { [key: string]: Assignment } = {};
+
     participants.forEach((participant, index) => {
-      const team = shuffledTeams[index % shuffledTeams.length];
-      newAssignments[participant] = { team: team.name, logo: team.logo };
+      newAssignments[participant] = {
+        team: shuffledTeams[index].name,
+        logo: shuffledTeams[index].logo,
+      };
     });
+
     setAssignments(newAssignments);
   };
 
