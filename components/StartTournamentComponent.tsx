@@ -22,6 +22,11 @@ type Assignment = {
   logo: string;
 };
 
+type StoredParticipant = {
+  name: string;
+  id: string;
+};
+
 type StartTournamentComponentProps = {
   teamsData: TeamsData;
 };
@@ -35,37 +40,38 @@ export default function StartTournamentComponent({
   );
 
   useEffect(() => {
-    const storedParticipants = localStorage.getItem("participants");
-    const tournamentConfig = JSON.parse(
-      localStorage.getItem("tournamentConfig") || "{}"
-    );
-    if (storedParticipants) {
-    }
-    assignTeams(JSON.parse(storedParticipants || "[]"), tournamentConfig);
-  }, []);
+    const assignTeams = (participants: StoredParticipant[]) => {
+      const allTeams: Assignment[] = [];
 
-  const assignTeams = (participants: string[], config: any) => {
-    let allTeams: Array<{ name: string; logo: string }> = [];
-
-    if (config.teamSelection === "all") {
-      allTeams = Object.values(teamsData).flatMap((country) =>
-        Object.values(country.leagues).flatMap((league) => league.clubs)
-      );
-    } else {
-      allTeams = config.selectedLeagues.flatMap((leagueKey: string) => {
-        const [country, league] = leagueKey.split("-");
-        return teamsData[country].leagues[league].clubs;
+      // Recolectar todos los equipos disponibles
+      Object.values(teamsData).forEach((country) => {
+        Object.values(country.leagues).forEach((league) => {
+          league.clubs.forEach((club) => {
+            allTeams.push({
+              team: club.name,
+              logo: club.logo,
+            });
+          });
+        });
       });
-    }
 
-    const shuffledTeams = [...allTeams].sort(() => Math.random() - 0.5);
-    const newAssignments: { [key: string]: Assignment } = {};
-    participants.forEach((participant, index) => {
-      const team = shuffledTeams[index % shuffledTeams.length];
-      newAssignments[participant] = { team: team.name, logo: team.logo };
-    });
-    setAssignments(newAssignments);
-  };
+      // Asignar equipos aleatoriamente
+      const shuffledTeams = [...allTeams].sort(() => Math.random() - 0.5);
+      const newAssignments: { [key: string]: Assignment } = {};
+
+      participants.forEach((participant, index) => {
+        newAssignments[participant.name] = shuffledTeams[index];
+      });
+
+      setAssignments(newAssignments);
+    };
+
+    const storedParticipants = localStorage.getItem("participants");
+    if (storedParticipants) {
+      const participants: StoredParticipant[] = JSON.parse(storedParticipants);
+      assignTeams(participants);
+    }
+  }, [teamsData]);
 
   const handleStart = () => {
     console.log("Torneo iniciado con asignaciones:", assignments);
