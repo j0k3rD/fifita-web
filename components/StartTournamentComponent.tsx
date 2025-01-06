@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
 
 type TeamsData = {
   [country: string]: {
@@ -42,6 +43,7 @@ export default function StartTournamentComponent({
   const [assignments, setAssignments] = useState<{ [key: string]: Assignment }>(
     {}
   );
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   const assignTeams = useCallback(() => {
     let allTeams: Array<{ name: string; logo: string }> = [];
@@ -86,28 +88,67 @@ export default function StartTournamentComponent({
   };
 
   return (
-    <div className="w-full max-w-4xl">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+    <div className="w-full max-w-4xl p-8 bg-black text-white">
+      <motion.div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, staggerChildren: 0.1 }}
+      >
         {Object.entries(assignments as Assignments).map(
-          ([participant, assignment]) => (
-            <Card key={participant} className="w-full overflow-hidden">
-              <CardContent className="p-6 relative">
-                <div
-                  className="absolute inset-0 bg-cover bg-center z-0 filter blur-sm opacity-50 transition-all duration-300 ease-in-out hover:blur-none hover:opacity-75"
-                  style={{ backgroundImage: `url(/logos/${assignment.logo})` }}
-                />
-                <div className="relative z-10">
-                  <h2 className="font-bold text-xl mb-2">{participant}</h2>
-                  <p className="text-lg">{assignment.team}</p>
-                </div>
-              </CardContent>
-            </Card>
+          ([participant, assignment], index) => (
+            <motion.div
+              key={participant}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <Card
+                className="w-full overflow-hidden bg-white text-black"
+                onMouseEnter={() => setHoveredCard(participant)}
+                onMouseLeave={() => setHoveredCard(null)}
+              >
+                <CardContent className="p-6 relative h-48">
+                  <motion.div
+                    className="absolute inset-0 bg-cover bg-center z-0"
+                    style={{
+                      backgroundImage: `url(/images/teams/${assignment.logo})`,
+                    }}
+                    initial={{ opacity: 0.3, filter: "blur(4px)" }}
+                    animate={{
+                      opacity: hoveredCard === participant ? 1 : 0.3,
+                      filter:
+                        hoveredCard === participant ? "blur(0px)" : "blur(4px)",
+                    }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  <motion.div
+                    className="relative z-10 h-full flex flex-col justify-between"
+                    initial={{ y: 0 }}
+                    animate={{ y: hoveredCard === participant ? -10 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h2 className="font-bold text-2xl mb-2">{participant}</h2>
+                    <p className="text-lg font-semibold">{assignment.team}</p>
+                  </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
           )
         )}
-      </div>
-      <Button onClick={handleStart} className="w-full">
-        Iniciar Torneo
-      </Button>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+      >
+        <Button
+          onClick={handleStart}
+          className="w-full bg-white text-black hover:bg-gray-200 transition-colors duration-300"
+        >
+          Iniciar Torneo
+        </Button>
+      </motion.div>
     </div>
   );
 }
