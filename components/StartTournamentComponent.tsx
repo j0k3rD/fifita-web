@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +22,11 @@ type Assignment = {
   logo: string;
 };
 
+type TournamentConfig = {
+  teamSelection: "all" | "selected";
+  selectedLeagues: string[];
+};
+
 type StartTournamentComponentProps = {
   teamsData: TeamsData;
 };
@@ -34,19 +39,7 @@ export default function StartTournamentComponent({
     {}
   );
 
-  useEffect(() => {
-    const storedParticipants = localStorage.getItem("participants");
-    const tournamentConfig = JSON.parse(
-      localStorage.getItem("tournamentConfig") || "{}"
-    );
-
-    if (storedParticipants) {
-      const parsedParticipants = JSON.parse(storedParticipants);
-      assignTeams(parsedParticipants, tournamentConfig);
-    }
-  }, []);
-
-  const assignTeams = (participants: string[], config: any) => {
+  const assignTeams = (participants: string[], config: TournamentConfig) => {
     let allTeams: Array<{ name: string; logo: string }> = [];
 
     if (config.teamSelection === "all") {
@@ -60,7 +53,6 @@ export default function StartTournamentComponent({
       });
     }
 
-    // Usar participants directamente del parámetro
     const shuffledTeams = [...allTeams].sort(() => Math.random() - 0.5);
     const newAssignments: { [key: string]: Assignment } = {};
 
@@ -74,11 +66,21 @@ export default function StartTournamentComponent({
     setAssignments(newAssignments);
   };
 
-  const handleStart = () => {
-    console.log("Torneo iniciado con asignaciones:", assignments);
-    localStorage.setItem("assignments", JSON.stringify(assignments));
-    router.push("/tournaments/tournament-bracket");
-  };
+  useEffect(() => {
+    const storedParticipants = localStorage.getItem("participants");
+    const tournamentConfig = JSON.parse(
+      localStorage.getItem("tournamentConfig") || "{}"
+    ) as TournamentConfig;
+
+    if (storedParticipants) {
+      const parsedParticipants = JSON.parse(storedParticipants);
+      assignTeams(parsedParticipants, tournamentConfig);
+    }
+  }, [assignTeams, teamsData]);
+
+  function handleStart(event: MouseEvent<HTMLButtonElement>): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <div className="w-full max-w-4xl">
