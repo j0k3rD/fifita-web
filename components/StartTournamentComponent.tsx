@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 
 type TeamsData = {
   [country: string]: {
@@ -34,7 +33,6 @@ export default function StartTournamentComponent({
   const [assignments, setAssignments] = useState<{ [key: string]: Assignment }>(
     {}
   );
-  const [participants, setParticipants] = useState<string[]>([]);
 
   useEffect(() => {
     const storedParticipants = localStorage.getItem("participants");
@@ -42,7 +40,6 @@ export default function StartTournamentComponent({
       localStorage.getItem("tournamentConfig") || "{}"
     );
     if (storedParticipants) {
-      setParticipants(JSON.parse(storedParticipants));
     }
     assignTeams(JSON.parse(storedParticipants || "[]"), tournamentConfig);
   }, []);
