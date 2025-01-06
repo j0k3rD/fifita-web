@@ -1,0 +1,96 @@
+.confetti {
+  position: fixed;
+  width: 8px;
+  height: 16px;
+  top: -20px; /* Empieza fuera de la pantalla */
+  left: 0;
+  animation: confetti-fall var(--fall-duration, 3s) linear infinite;
+}
+
+.confetti--variant-1 {
+  background-color: #ff718d;
+}
+.confetti--variant-2 {
+  background-color: #54d3ff;
+}
+.confetti--variant-3 {
+  background-color: #ffd862;
+}
+.confetti--variant-4 {
+  background-color: #54ff62;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100%) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Animación de balanceo */
+@keyframes confetti-sway {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(100px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* Generador de confetti */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Aplicar variaciones aleatorias */
+.confetti:nth-child(even) {
+  --fall-duration: 4s;
+  animation-delay: calc(var(--fall-delay) * 0.5);
+}
+
+.confetti:nth-child(3n) {
+  --fall-duration: 5s;
+  animation-delay: calc(var(--fall-delay) * 1.5);
+}
+
+/* Distribuir aleatoriamente en el eje X */
+.confetti:nth-child(1) {
+  left: 10%;
+}
+.confetti:nth-child(2) {
+  left: 20%;
+}
+.confetti:nth-child(3) {
+  left: 30%;
+}
+.confetti:nth-child(4) {
+  left: 40%;
+}
+.confetti:nth-child(5) {
+  left: 50%;
+}
+.confetti:nth-child(6) {
+  left: 60%;
+}
+.confetti:nth-child(7) {
+  left: 70%;
+}
+.confetti:nth-child(8) {
+  left: 80%;
+}
+.confetti:nth-child(9) {
+  left: 90%;
+}

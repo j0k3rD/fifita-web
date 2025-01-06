@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tournament {
+  id                   String    @id @default(cuid())
+  name                 String
+  participants         Participant[]
+  matches              Match[]
+  changeTeamsEachRound Boolean   @default(false)
+  currentRound         Int       @default(1)
+  status               TournamentStatus @default(NOT_STARTED)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+model Match {
+  id                String      @id @default(cuid())
+  tournament        Tournament  @relation(fields: [tournamentId], references: [id])
+  tournamentId      String
+  homeParticipant   Participant @relation("HomeParticipant", fields: [homeParticipantId], references: [id])
+  homeParticipantId String
+  awayParticipant   Participant @relation("AwayParticipant", fields: [awayParticipantId], references: [id])
+  awayParticipantId String
+  homeScore        Int?
+  awayScore        Int?
+  round            Int
+  winner           Participant? @relation("MatchWinner", fields: [winnerId], references: [id])
+  winnerId         String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+}
+
+enum TournamentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Participant {
+  id              String    @id @default(cuid())
+  name            String
+  tournament      Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId    String
+  team            Team      @relation(fields: [teamId], references: [id])
+  teamId          String
+  homeMatches     Match[]   @relation("HomeParticipant")
+  awayMatches     Match[]   @relation("AwayParticipant")
+  wonMatches      Match[]   @relation("MatchWinner") // Agregar relación opuesta
+}
+
+model Team {
+  id            String    @id @default(cuid())
+  name          String
+  logo          String
+  league        League    @relation(fields: [leagueId], references: [id])
+  leagueId      String
+  participants  Participant[]
+}
+
+model League {
+  id       String  @id @default(cuid())
+  name     String
+  logo     String
+  region   Region  @relation(fields: [regionId], references: [id])
+  regionId String
+  teams    Team[]
+}
+
+model Region {
+  id      String  @id @default(cuid())
+  name    String
+  logo    String
+  leagues League[]
+}
