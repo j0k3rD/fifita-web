@@ -2,123 +2,143 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { teamsData } from "@/data/fc25_teams";
 
-type TeamsData = {
-  [country: string]: {
-    logo: string;
-    leagues: {
-      [league: string]: {
-        logo: string;
-        clubs: Array<{ name: string; logo: string }>;
+interface NewTournamentFormProps {
+  teamsData: {
+    [country: string]: {
+      logo: string;
+
+      leagues: {
+        [leagueName: string]: {
+          logo: string;
+
+          clubs: { name: string; logo: string }[];
+        };
       };
     };
   };
-};
+}
 
-type NewTournamentFormProps = {
-  teamsData: TeamsData;
-};
-
-export default function NewTournamentForm({
-  teamsData,
-}: NewTournamentFormProps) {
-  const router = useRouter();
-  const [name, setName] = useState("");
-  const [teamSelection, setTeamSelection] = useState("all");
-  const [changeTeams, setChangeTeams] = useState(false);
+export function NewTournamentForm({ teamsData }: NewTournamentFormProps) {
+  const [tournamentName, setTournamentName] = useState("");
+  const [teamSelection, setTeamSelection] = useState<"all" | "select">("all");
   const [selectedLeagues, setSelectedLeagues] = useState<string[]>([]);
+  const [changeTeamsEachPhase, setChangeTeamsEachPhase] =
+    useState<boolean>(false);
+  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Aquí iría la lógica para crear el torneo en la base de datos
-    console.log({ name, teamSelection, changeTeams, selectedLeagues });
-    localStorage.setItem(
-      "tournamentConfig",
-      JSON.stringify({ name, teamSelection, changeTeams, selectedLeagues })
-    );
-    router.push("/tournaments/add-participants");
-  };
 
-  const toggleLeague = (league: string) => {
-    setSelectedLeagues((prev) =>
-      prev.includes(league)
-        ? prev.filter((l) => l !== league)
-        : [...prev, league]
-    );
+    if (tournamentName.trim()) {
+      const tournamentConfig = {
+        tournamentName,
+        teamSelection,
+        selectedLeagues,
+        changeTeamsEachPhase,
+      };
+      localStorage.setItem(
+        "tournamentConfig",
+        JSON.stringify(tournamentConfig)
+      );
+      router.push("/tournaments/start");
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-md">
-      <div className="space-y-2">
-        <Label htmlFor="name">Nombre del Torneo</Label>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <Label htmlFor="tournamentName">Nombre del Torneo</Label>
         <Input
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          id="tournamentName"
+          type="text"
+          value={tournamentName}
+          onChange={(e) => setTournamentName(e.target.value)}
           required
+          className="mt-1"
         />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="teamSelection">Selección de Equipos</Label>
-        <Select value={teamSelection} onValueChange={setTeamSelection}>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecciona una opción" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos los equipos de FC25</SelectItem>
-            <SelectItem value="leagues">
-              Seleccionar ligas específicas
-            </SelectItem>
-          </SelectContent>
-        </Select>
+
+      <div>
+        <Label>Selección de Equipos</Label>
+        <RadioGroup
+          value={teamSelection}
+          onValueChange={(value) => setTeamSelection(value as "all" | "select")}
+          className="mt-2"
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="all" id="all" />
+            <Label htmlFor="all">Todos los equipos</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="select" id="select" />
+            <Label htmlFor="select">Seleccionar ligas</Label>
+          </div>
+        </RadioGroup>
       </div>
-      {teamSelection === "leagues" && (
+
+      {teamSelection === "select" && teamsData && (
         <div className="space-y-2">
           <Label>Ligas Disponibles</Label>
-          <div className="grid grid-cols-2 gap-4 max-h-60 overflow-y-auto">
-            {Object.entries(teamsData).map(([country, countryData]) =>
-              Object.keys(countryData.leagues).map((league) => (
-                <Card key={`${country}-${league}`} className="p-2">
-                  <CardContent className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`${country}-${league}`}
-                      checked={selectedLeagues.includes(`${country}-${league}`)}
-                      onCheckedChange={() =>
-                        toggleLeague(`${country}-${league}`)
-                      }
-                    />
-                    <Label htmlFor={`${country}-${league}`}>{league}</Label>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
+          {Object.entries(teamsData).map(([country, countryData]) =>
+            Object.keys(countryData.leagues).map((league) => (
+              <div
+                key={`${country}-${league}`}
+                className="flex items-center space-x-2"
+              >
+                <Checkbox
+                  id={`${country}-${league}`}
+                  checked={selectedLeagues.includes(`${country}-${league}`)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedLeagues([
+                        ...selectedLeagues,
+                        `${country}-${league}`,
+                      ]);
+                    } else {
+                      setSelectedLeagues(
+                        selectedLeagues.filter(
+                          (l) => l !== `${country}-${league}`
+                        )
+                      );
+                    }
+                  }}
+                />
+                <Label
+                  htmlFor={`${country}-${league}`}
+                >{`${country} - ${league}`}</Label>
+              </div>
+            ))
+          )}
         </div>
       )}
+
       <div className="flex items-center space-x-2">
-        <Switch
+        <Checkbox
           id="changeTeams"
-          checked={changeTeams}
-          onCheckedChange={setChangeTeams}
+          checked={changeTeamsEachPhase}
+          onCheckedChange={(checked) =>
+            setChangeTeamsEachPhase(checked as boolean)
+          }
         />
-        <Label htmlFor="changeTeams">Cambiar equipos en cada fase</Label>
+        <Label htmlFor="changeTeams">
+          Cambiar equipos después de cada fase
+        </Label>
       </div>
-      <Button type="submit" className="w-full">
-        Crear Torneo
-      </Button>
+
+      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+        <Button type="submit" className="w-full">
+          Crear Torneo
+        </Button>
+      </motion.div>
     </form>
   );
 }
