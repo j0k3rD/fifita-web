@@ -42,45 +42,13 @@ export default function TournamentBracket() {
   const [tournamentHistory, setTournamentHistory] = useState<Match[]>([]);
   const [changeTeamsEachPhase, setChangeTeamsEachPhase] = useState(false);
   const [teamsData, setTeamsData] = useState<TeamsData | null>(null);
-  const [availableTeams, setAvailableTeams] = useState<
-    Array<{ name: string; logo: string }>
-  >([]);
 
   useEffect(() => {
-    const loadTeamsAndConfig = async () => {
+    const fetchTeamsData = async () => {
       const data = await readTeamsData();
       setTeamsData(data);
-
-      const config = JSON.parse(
-        localStorage.getItem("tournamentConfig") || "{}"
-      );
-
-      if (
-        config.teamSelection === "select" &&
-        config.selectedLeagues?.length > 0
-      ) {
-        const teams: Array<{ name: string; logo: string }> = [];
-
-        config.selectedLeagues.forEach((leagueId: string) => {
-          const [country, league] = leagueId.split("-");
-          const leagueTeams = data[country]?.leagues[league]?.clubs || [];
-          teams.push(...leagueTeams);
-        });
-
-        setAvailableTeams(teams);
-      } else {
-        // Si es "all", agregar todos los equipos
-        const allTeams: Array<{ name: string; logo: string }> = [];
-        Object.values(data).forEach((country) => {
-          Object.values(country.leagues).forEach((league) => {
-            allTeams.push(...league.clubs);
-          });
-        });
-        setAvailableTeams(allTeams);
-      }
     };
-
-    loadTeamsAndConfig();
+    fetchTeamsData();
 
     const storedConfig = localStorage.getItem("tournamentConfig");
     if (storedConfig) {
@@ -111,18 +79,6 @@ export default function TournamentBracket() {
       setMatches(initialMatches);
     }
   }, []);
-
-  const getRandomTeams = (count: number) => {
-    const teams = [...availableTeams];
-    const selected = [];
-
-    for (let i = 0; i < count && teams.length > 0; i++) {
-      const randomIndex = Math.floor(Math.random() * teams.length);
-      selected.push(teams.splice(randomIndex, 1)[0]);
-    }
-
-    return selected;
-  };
 
   const updateScore = (
     matchId: number,
@@ -174,10 +130,10 @@ export default function TournamentBracket() {
     if (winners.length > 1) {
       const newMatches = [];
       for (let i = 0; i < winners.length; i += 2) {
-        const player1 = winners[i];
+        const player1 = winners[i] || "BYE";
         const player2 = winners[i + 1] || "BYE";
         const team1 = changeTeamsEachPhase
-          ? assignNewTeam(player1)
+          ? assignNewTeam(player1 || "BYE")
           : { team: updatedMatches[i].team1, logo: updatedMatches[i].logo1 };
         const team2 =
           player2 !== "BYE" && changeTeamsEachPhase
@@ -208,7 +164,7 @@ export default function TournamentBracket() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-24 animate-fade-in bg-black text-white">
+    <div className="flex min-h-screen flex-col items-center justify-center p-24 animate-fade-in bg-gradient-to-br from-gray-900 to-gray-800 text-white">
       <h1 className="text-3xl font-bold mb-8">
         Llaves del Torneo - Ronda {round}
       </h1>

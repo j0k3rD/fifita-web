@@ -23,8 +23,7 @@ const SOCCER_GIFS = [
 
 export default function Winner() {
   const router = useRouter();
-  const { winner, winnerLogo, tournamentHistory, isLoading, error } =
-    useTournamentData();
+  const { winner, tournamentHistory, isLoading, error } = useTournamentData();
   const triggerConfetti = useConfetti();
 
   useEffect(() => {

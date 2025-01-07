@@ -7,8 +7,29 @@ import StartTournamentComponent from "@/components/StartTournamentComponent";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
+interface Club {
+  name: string;
+  logo: string;
+}
+
+interface League {
+  logo: string;
+  clubs: Club[];
+}
+
+interface Country {
+  logo: string;
+  leagues: {
+    [key: string]: League;
+  };
+}
+
+interface TeamsData {
+  [key: string]: Country;
+}
+
 export default function StartTournament() {
-  const [teamsData, setTeamsData] = useState<any>(null);
+  const [teamsData, setTeamsData] = useState<TeamsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

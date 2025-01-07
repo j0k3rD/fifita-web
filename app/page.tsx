@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trophy, Users, Zap } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { BackgroundAnimation } from "@/components/BackgroundAnimation";
 
 export default function Home() {
