@@ -92,7 +92,7 @@ export default function TournamentBracket() {
     );
   };
 
-  const assignNewTeam = (player: string) => {
+  const assignNewTeam = () => {
     if (!teamsData) return { team: "Unknown", logo: "unknown.png" };
 
     const allTeams = Object.values(teamsData).flatMap((country) =>
@@ -133,11 +133,11 @@ export default function TournamentBracket() {
         const player1 = winners[i] || "BYE";
         const player2 = winners[i + 1] || "BYE";
         const team1 = changeTeamsEachPhase
-          ? assignNewTeam(player1 || "BYE")
+          ? assignNewTeam()
           : { team: updatedMatches[i].team1, logo: updatedMatches[i].logo1 };
         const team2 =
           player2 !== "BYE" && changeTeamsEachPhase
-            ? assignNewTeam(player2)
+            ? assignNewTeam()
             : { team: updatedMatches[i].team2, logo: updatedMatches[i].logo2 };
         newMatches.push({
           id: i / 2 + 1,
